@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model',default='resnet50' , type=str)
 parser.add_argument('--batchsize',default=1 , type=int)
 parser.add_argument('--imgsize',default=224 , type=int)
+parser.add_argument('--arch',default='arm' , type=str)
 
 
 args = parser.parse_args()
@@ -23,8 +24,13 @@ args = parser.parse_args()
 model_name = args.model
 batch_size = args.batchsize
 size = args.imgsize
+arch_type = args.arch
 
-target = 'llvm'
+if arch_type == "intel":
+    target = 'llvm'
+else:
+    target = tvm.target.arm_cpu()
+
 ctx = tvm.cpu()
 
 def make_dataset(batch_size,size):
