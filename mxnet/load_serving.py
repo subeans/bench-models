@@ -12,23 +12,30 @@ def benchmark(model, batch_size, repeat):
     ctx = tvm.cpu()
 
     if model in ["bert"]:
-        seq_length = 128
-
-        shape_dict = {
-            "data0": (batch_size, seq_length),
-            "data1": (batch_size, seq_length),
-            "data2": (batch_size,),
-        }
-        input_shape = (shape_dict["data0"], shape_dict["data1"], shape_dict["data2"])
 
         loaded_lib = tvm.runtime.load_module(f'/home/ec2-user/{framework}/{model}.tar')
         module = runtime.GraphModule(loaded_lib["default"](ctx))
 
         # Feed input data
-        seq_length = input_shape[0][1]
-        data = np.random.uniform(size=input_shape[0])
-        token_types = np.random.uniform(size=input_shape[1])
-        valid_length = np.array([seq_length] * batch_size)
+        dtype = "float32"
+        seq_length = 128
+        data = np.random.randint(0, 2000, size=(batch_size, seq_length)).astype(dtype)
+        token_types = np.random.uniform(size=(batch_size, seq_length)).astype(dtype)
+        valid_length = np.asarray([seq_length] * batch_size).astype(dtype)
+
+        # Feed input data version2 
+        # shape_dict = {
+        #     "data0": (batch_size, seq_length),
+        #     "data1": (batch_size, seq_length),
+        #     "data2": (batch_size,),
+        # }
+        # input_shape = (shape_dict["data0"], shape_dict["data1"], shape_dict["data2"])
+        # seq_length = input_shape[0][1]
+        # data = np.random.uniform(size=input_shape[0])
+        # token_types = np.random.uniform(size=input_shape[1])
+        # valid_length = np.array([seq_length] * batch_size)
+
+
         module.set_input(data0=data, data1=token_types, data2=valid_length)
 
     else:
