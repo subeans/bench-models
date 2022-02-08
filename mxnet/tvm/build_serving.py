@@ -4,6 +4,9 @@ import numpy as np
 import tvm
 from tvm import relay, autotvm
 import tvm.contrib.graph_executor as runtime
+from tvm.contrib import graph_runtime
+import mxnet as mx
+
 import tvm
 from tvm import relay
 
@@ -19,6 +22,19 @@ def get_network(name, batch_size, dtype="float32", layout="NCHW"):
 
         n_layer = int(name.split("t")[1])
         block = mxnet.gluon.model_zoo.vision.get_resnet(1, n_layer, pretrained=True)
+        
+        sym = block(mx.sym.var('data'))
+        if isinstance(sym, tuple):
+            sym = mx.sym.Group([*sym])
+
+        # os.path.join(conf.MRT_MODEL_ROOT, name)
+        # sym_path = sym_path if sym_path else "./data/%s.json"%name
+        # prm_path = prm_path if prm_path else "./data/%s.params"%name
+        with open(f'{name}.json', "w") as fout:
+            fout.write(sym.tojson())
+        block.collect_params().save(f'{name}.params')
+
+
         mod, params = relay.frontend.from_mxnet(
             block, shape={"data": input_shape}, dtype=dtype
         )
@@ -101,19 +117,50 @@ def convert_to_nhwc(mod):
         mod = seq(mod)
     return mod
 
-def benchmark(network, batch_size, dtype, target, repeat):
+def export_results(graph,lib,params,model,batch_size):
+
+    name = f"./{model}_{batch_size}/model"
+    try:
+        target_path = f"./{model}_{batch_size}"
+        os.mkdir(target_path)
+    except:
+        pass
+    graph_fn, lib_fn, params_fn = [name+ext for ext in ('.json','.tar','.params')]
+    lib.export_library(lib_fn)
+    with open(graph_fn, 'w') as f:
+        f.write(graph)
+    with open(params_fn, 'wb') as f:
+        f.write(relay.save_param_dict(params))
+
+
+def benchmark(model, batch_size, dtype, target, repeat):
     layout = "NCHW"
     mod, params, input_name, input_shape, output_shape = get_network(
-        network, batch_size, dtype, layout
+        model, batch_size, dtype, layout
     )
+    ctx = tvm.cpu()
 
-    if network in ["bert"]:
+    if model in ["bert"]:
         # Build module
         with tvm.transform.PassContext(opt_level=3):
             lib = relay.build(mod, target=target, params=params)
-        #ctx = tvm.context(str(target), 0)
-        ctx = tvm.cpu()
+        lib.export_library(f"./{model}_{batch_size}.tar")
+        # Make module 
         module = runtime.GraphModule(lib["default"](ctx))
+        
+        ##########################################################################
+        # old version 
+        ##########################################################################
+        # with tvm.transform.PassContext(opt_level=3):
+        #     #lib = relay.build(mod, target=target, params=params)
+        #     graph, lib, params = relay.build(mod, target=target, params=params)
+        # ctx = tvm.cpu()
+        
+        # export_results(graph,lib,params,model,batch_size)
+
+        # module = tvm.contrib.graph_runtime.create(graph, lib, ctx)
+        # # module.load_params(params)     
+
 
         # Feed input data
         seq_length = input_shape[0][1]
@@ -126,9 +173,18 @@ def benchmark(network, batch_size, dtype, target, repeat):
         # Build module
         with tvm.transform.PassContext(opt_level=3):
             lib = relay.build(mod, target=target, params=params)
-        ctx = tvm.cpu()
-        #ctx = tvm.device(str(target), 0)
+        lib.export_library(f"./{model}_{batch_size}.tar")
+        #Make module 
         module = runtime.GraphModule(lib["default"](ctx))
+        
+        # with tvm.transform.PassContext(opt_level=3):
+        #     graph, lib, params = relay.build(mod, target=target, params=params)
+        # ctx = tvm.cpu()
+
+        # export_results(graph,lib,params,model,batch_size)
+
+        # module = tvm.contrib.graph_runtime.create(graph, lib, ctx)
+        # module.load_params(params)     
 
         # Feed input data
         data = np.random.uniform(size=input_shape)
@@ -151,7 +207,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--target",
         type=str,
-        default="llvm -mcpu=skylake-avx512",
+        default="llvm -mcpu=core-avx2",
         help="The compilation target.",
     )
     parser.add_argument("--dtype", type=str, default="float32", help="The data type.")
