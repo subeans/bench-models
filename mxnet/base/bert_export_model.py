@@ -8,6 +8,13 @@ ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
 
 def bert_download(model_name,seq_length, batch_size, dtype="float32"):
+    inputs = np.random.randint(0, 2000, size=(batch_size, seq_length)).astype(dtype)
+    token_types = np.random.uniform(size=(batch_size, seq_length)).astype(dtype)
+    valid_length = np.asarray([seq_length] * batch_size).astype(dtype)
+        
+    inputs_nd = mx.nd.array(inputs, ctx=ctx)
+    token_types_nd = mx.nd.array(token_types, ctx=ctx)
+    valid_length_nd = mx.nd.array(valid_length, ctx=ctx)
 
     # Instantiate a BERT classifier using GluonNLP
     # dataset = 
@@ -25,15 +32,7 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
         model = nlp.model.BERTClassifier(model, dropout=0.1, num_classes=2)
         model.initialize(ctx=ctx)
         # model.hybridize(static_alloc=True)
-        
-        # Prepare input data
-        inputs = np.random.randint(0, 2000, size=(batch_size, seq_length)).astype(dtype)
-        token_types = np.random.uniform(size=(batch_size, seq_length)).astype(dtype)
-        valid_length = np.asarray([seq_length] * batch_size).astype(dtype)
-        
-        inputs_nd = mx.nd.array(inputs, ctx=ctx)
-        token_types_nd = mx.nd.array(token_types, ctx=ctx)
-        valid_length_nd = mx.nd.array(valid_length, ctx=ctx)
+                
         mx_out = model(inputs_nd, token_types_nd, valid_length_nd)
         mx_out.wait_to_read()
 
@@ -54,12 +53,6 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
                 pretrained=True,
             )
  
-        # Prepare input data
-        inputs = np.random.randint(0, 2000, size=(batch_size, seq_length)).astype(dtype)
-        valid_length = np.asarray([seq_length] * batch_size).astype(dtype)
-        
-        inputs_nd = mx.nd.array(inputs, ctx=ctx)
-        valid_length_nd = mx.nd.array(valid_length, ctx=ctx)
         mx_out = model(inputs_nd, valid_length_nd)
         mx_out.wait_to_read()
 
@@ -82,6 +75,7 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
     print("-"*10,f"Download {model_name} complete","-"*10)  
 
     
+
 
 if __name__ == "__main__":
     import argparse
