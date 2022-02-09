@@ -17,7 +17,6 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
     valid_length_nd = mx.nd.array(valid_length, ctx=ctx)
 
     # Instantiate a BERT classifier using GluonNLP
-    # dataset = 
     if model_name == "bert_base":
         model_name_ = "bert_12_768_12"
         dataset = "book_corpus_wiki_en_uncased"
@@ -31,18 +30,14 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
             )
         model = nlp.model.BERTClassifier(model, dropout=0.1, num_classes=2)
         model.initialize(ctx=ctx)
-        # model.hybridize(static_alloc=True)
+        model.hybridize(static_alloc=True)
                 
         mx_out = model(inputs_nd, token_types_nd, valid_length_nd)
         mx_out.wait_to_read()
 
         # print model info
-        print("-"*10,f"{model_name} Parameter Info","-"*10)
-        print(model.summary(inputs_nd,token_types_nd, valid_length_nd))
-
-        # export BERT model 
-        sym = model(mx.sym.var('data'),mx.sym.var('token_types'),mx.sym.var('valid_length'))
-        
+        #print("-"*10,f"{model_name} Parameter Info","-"*10)
+        #print(model.summary(inputs_nd,token_types_nd, valid_length_nd))       
 
     elif model_name == "distilbert":
         model_name_="distilbert_6_768_12"
@@ -52,30 +47,23 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
                 dataset_name=dataset,
                 pretrained=True,
             )
- 
+        model.hybridize(static_alloc=True)
+
         mx_out = model(inputs_nd, valid_length_nd)
         mx_out.wait_to_read()
 
-        # export BERT model 
-        print("-"*10,f"{model_name} Parameter Info","-"*10)
-        print(model.summary(inputs_nd, valid_length_nd))
-        sym = model(mx.sym.var('data'),mx.sym.var('valid_length'))
+        # print("-"*10,f"{model_name} Parameter Info","-"*10)
+        # print(model.summary(inputs_nd, valid_length_nd))
   
-    if isinstance(sym, tuple):
-        sym = mx.sym.Group([*sym])
 
     target_path = f"./{model_name}"
     from pathlib import Path
     Path(target_path).mkdir(parents=True, exist_ok=True)  
 
-    with open(f'./{model_name}/model.json', "w") as fout:
-        fout.write(sym.tojson())
-    model.collect_params().save(f'./{model_name}/model.params')
-
+    model.export(f'{model_name}/model')
     print("-"*10,f"Download {model_name} complete","-"*10)  
 
     
-
 
 if __name__ == "__main__":
     import argparse
@@ -92,4 +80,3 @@ if __name__ == "__main__":
 
 
     bert_download(model_name,seq_length,batchsize)
-        
