@@ -6,6 +6,7 @@ MXNET Inference Serving ( baseline )
 - Running from source 
 ```
 pip3 install mxnet 
+pip3 install gluonnlp
 git clone https://github.com/subeans/tvm-model.git
 cd tvm-model/mxnet/base 
 
