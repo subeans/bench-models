@@ -1,8 +1,4 @@
 import json
-from pyexpat import model
-
-from charset_normalizer import models
-
 import mxnet as mx
 from mxnet import gluon, nd
 from mxnet.gluon.model_zoo import vision
@@ -23,28 +19,22 @@ def download_model(model_name,imgsize=224):
     }
 
     model = models_detail[model_name]
+    model.hybridize()
 
     input_shape = (1, 3, imgsize, imgsize)
     data = np.random.uniform(size=input_shape)
 
+    data_array = np.random.uniform(0, 255, size=input_shape).astype("float32")
+    mx_data = mx.nd.array(data_array)
+    model(mx_data)
     input_data = mx.nd.array(data, ctx=ctx)
-
-    print("-"*10,f"{model_name} Parameter Info","-"*10)
-    print(model.summary(input_data))
-
-    sym = model(mx.sym.var('data'))
-    if isinstance(sym, tuple):
-        sym = mx.sym.Group([*sym])
-
+    
     target_path = f"./{model_name}"
     from pathlib import Path
-    Path(target_path).mkdir(parents=True, exist_ok=True)  
+    Path(target_path).mkdir(parents=True, exist_ok=True)
 
-    with open(f'./{model_name}/model.json', "w") as fout:
-        fout.write(sym.tojson())
-    model.collect_params().save(f'./{model_name}/model.params')
-
-    print("-"*10,f"Download {model_name} complete","-"*10)
+    model.export(f'{model_name}/model')
+    print("-"*10,f"Download and export {model_name} complete","-"*10)
 
 if __name__ == "__main__":
     import argparse
@@ -65,4 +55,3 @@ if __name__ == "__main__":
         if model == 'inception_v3':
             img_size = 299
         download_model(model,img_size)
-        
