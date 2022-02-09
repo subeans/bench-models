@@ -19,3 +19,15 @@ python3 load_serving.py --model resnet50
 # 3. upload model to s3 
 aws s3 sync ./resnet50/ s3://BUCKET_PATH/FOLDER/
 ```
+### NLP 
+- Running from source 
+```
+# 1. download model from gluon zoo and export model ( /model_name/model.params and model.json )
+# models -> bert_base , distilbert 
+# python3 bert_export_model.py --model bert_base 
+
+# 2. load model and inference 
+# python3 bert_load_serving.py --model bert_base
+
+# 3. upload model to s3 
+aws s3 sync ./bert_base/ s3://BUCKET_PATH/FOLDER/
