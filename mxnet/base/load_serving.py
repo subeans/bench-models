@@ -31,8 +31,8 @@ def timer(thunk, repeat=1, number=10, dryrun=3, min_repeat_ms=1000):
     return ret
 
 def load_model(model_name):
-    model_json = f"./{model_name}/model.json"
-    model_params = f"./{model_name}/model.params"
+    model_json = f"./{model_name}/model-symbol.json"
+    model_params = f"./{model_name}/model-0000.params"
 
 
     with warnings.catch_warnings():
