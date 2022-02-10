@@ -63,16 +63,16 @@ def get_network(model_name, imgsize,batch_size, target,dtype="float32", layout="
     # TEST INFERENCE 
     #########################################################################################
     # Make module
-    # dev = tvm.cpu()
-    # module = runtime.GraphModule(lib["default"](dev))
+    dev = tvm.cpu()
+    module = runtime.GraphModule(lib["default"](dev))
 
-    # data = np.random.uniform(size=input_shape)
-    # module.set_input(input_name, data)
+    data = np.random.uniform(size=input_shape)
+    module.set_input(input_name, data)
 
     # # Evaluate
-    # ftimer = module.module.time_evaluator("run", dev, min_repeat_ms=500, repeat=5)
-    # prof_res = np.array(ftimer().results) * 1000
-    # print(f"TVM {model_name} latency for batch {batch_size} : {np.mean(prof_res):.2f} ms")
+    ftimer = module.module.time_evaluator("run", dev, min_repeat_ms=500, repeat=5)
+    prof_res = np.array(ftimer().results) * 1000
+    print(f"TVM {model_name} latency for batch {batch_size} : {np.mean(prof_res):.2f} ms")
     return mod, params, input_name, input_shape, output_shape
 
 
