@@ -15,7 +15,7 @@ def benchmark(model, img_size,batch_size, repeat=3):
     input_shape = (batch_size, 3, img_size, img_size)
     output_shape = (batch_size, 1000)
     
-    loaded_lib = tvm.runtime.load_module(f'./{model}_{batch_size}.tar')
+    loaded_lib = tvm.runtime.load_module(f'./{model}.tar')
 
     module = runtime.GraphModule(loaded_lib["default"](ctx))
 
