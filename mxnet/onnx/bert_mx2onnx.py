@@ -4,8 +4,8 @@ import os
 
 
 def convert(model_name,batch_size,seq_length,dtype="float32"):
-    sym = f'./{model_name}/model-symbol.json'
-    params =  f'./{model_name}/model-0000.params'
+    sym = f'../base/{model_name}/model-symbol.json'
+    params =  f'../base/{model_name}/model-0000.params'
 
     onnx_file = f"./{model_name}.onnx"
     target_path = f"./{model_name}"
