@@ -27,7 +27,7 @@ def benchmark(model_name,batch_size,seq_length,dtype="float32",c=5):
         input_info = {inname[0]: inputs,inname[1]:valid_length}
         
     time_list = []
-    for i in range(batch_size):
+    for i in range(c):
         start_time = time.time()
         session.run(outname,input_info )
         running_time = time.time() - start_time
