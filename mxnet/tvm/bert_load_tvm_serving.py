@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model',default='bert_base' , type=str)
-    parser.add_argument('--target',defalut="llvm -mcpu=core-avx2" , type=str)
+    parser.add_argument('--target',default="llvm -mcpu=core-avx2" , type=str)
     parser.add_argument('--batchsize',default=1 , type=int)
     parser.add_argument('--seq_length',default=128 , type=int)
 
