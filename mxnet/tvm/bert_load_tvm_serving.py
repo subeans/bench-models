@@ -19,8 +19,8 @@ warnings.filterwarnings(action='ignore')
 def load_model(model_name):
     ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
-    model_json = f"./{model_name}/model-symbol.json"
-    model_params = f"./{model_name}/model-0000.params"
+    model_json = f"../base/{model_name}/model-symbol.json"
+    model_params = f"../base/{model_name}/model-0000.params"
 
     if model_name == "bert_base":
         with warnings.catch_warnings():
@@ -32,7 +32,7 @@ def load_model(model_name):
             model = gluon.nn.SymbolBlock.imports(model_json, ['data0','data1'], model_params, ctx=ctx)
     return model 
 
-def compile_tvm(model_name,batch_size,seq_length):
+def compile_tvm(model_name,batch_size,seq_length,target):
 
     # load origianl mxnet model 
     model = load_model(model_name)
@@ -63,9 +63,8 @@ def compile_tvm(model_name,batch_size,seq_length):
     mod, params = relay.frontend.from_mxnet(model, shape_dict)
 
     # Compile the imported model
-    target = "llvm -mcpu=core-avx2"
-    # with relay.build_config(opt_level=3, required_pass=["FastMath"]):
-    #     graph, lib, cparams = relay.build(mod, target, params=params)
+    if target == "arm":
+        target = tvm.target.arm_cpu()
 
     with tvm.transform.PassContext(opt_level=3):
         mod = relay.transform.InferType()(mod)
@@ -90,13 +89,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model',default='bert_base' , type=str)
+    parser.add_argument('--target',defalut="llvm -mcpu=core-avx2" , type=str)
     parser.add_argument('--batchsize',default=1 , type=int)
     parser.add_argument('--seq_length',default=128 , type=int)
 
     args = parser.parse_args()
 
     model_name = args.model
+    target = args.target
     batch_size = args.batchsize
     seq_length = args.seq_length
 
-    compile_tvm(model_name,batch_size,seq_length)
+    compile_tvm(model_name,batch_size,seq_length,target)
