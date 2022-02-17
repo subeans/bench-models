@@ -30,17 +30,17 @@ def timer(thunk, repeat=1, number=10, dryrun=3, min_repeat_ms=1000):
     return ret
 
 def load_model(model_name):
-    model_json = f"./{model_name}/model.json"
-    model_params = f"./{model_name}/model.params"
+    model_json = f"./{model_name}/model-symbol.json"
+    model_params = f"./{model_name}/model-0000.params"
 
     if model_name == "bert_base":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            model = gluon.nn.SymbolBlock.imports(model_json, ['data','token_types','valid_length'], model_params, ctx=ctx)
+            model = gluon.nn.SymbolBlock.imports(model_json, ['data0','data1','data2'], model_params, ctx=ctx)
     elif model_name == "distilbert":
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            model = gluon.nn.SymbolBlock.imports(model_json, ['data','valid_length'], model_params, ctx=ctx)
+            model = gluon.nn.SymbolBlock.imports(model_json, ['data0','data1'], model_params, ctx=ctx)
     return model 
 
 def benchmark(model_name,batch_size,seq_length,dtype='float32'):
