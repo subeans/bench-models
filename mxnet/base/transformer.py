@@ -27,6 +27,15 @@ def get_models(seq_length):
         max_length=seq_length)
 
     detokenizer = nlp.data.SacreMosesDetokenizer()
+    
+    # export 
+    #target_path = "./transformer"
+    #from pathlib import Path
+    #Path(target_path).mkdir(parents=True, exist_ok=True)  
+
+    #transformer_model.export('transformer/model')
+    #print("-"*10,f"Download transformer complete","-"*10) 
+
 
     return transformer_model , translator , detokenizer, src_vocab, tgt_vocab
 
