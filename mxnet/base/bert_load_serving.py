@@ -74,7 +74,7 @@ def benchmark(model_name,batch_size,seq_length,dtype='float32'):
                     dryrun=5,
                     min_repeat_ms=1000)
     
-    print(f"MXNet {model_name} latency for batch 1 : {np.mean(res):.2f} ms")
+    print(f"MXNet {model_name} latency for batch {batch_size} : {np.mean(res):.2f} ms")
 
 
 
