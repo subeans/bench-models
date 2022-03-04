@@ -30,11 +30,11 @@ def timer(thunk, repeat=1, number=10, dryrun=3, min_repeat_ms=1000):
         ret.append(lat / number)
     return ret
 
-def load_model(model_name):
+def load_model(model_name,batchsize):
     ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
-    model_json = f"../base/{model_name}/model-symbol.json"
-    model_params = f"../base/{model_name}/model-0000.params"
+    model_json = f"../base/{model_name}_{batchsize}/model-symbol.json"
+    model_params = f"../base/{model_name}_{batchsize}/model-0000.params"
 
 
     with warnings.catch_warnings():
@@ -57,25 +57,26 @@ def convert_to_nhwc(mod):
     return mod
 
 
-def compile_export(mod,params,target):
+def compile_export(mod,params,target,batch_size):
     if target == "arm":
         target = tvm.target.arm_cpu()
     with tvm.transform.PassContext(opt_level=3):
         mod = relay.transform.InferType()(mod)
         lib = relay.build(mod, target=target, params=params)
-    lib.export_library(f"./{model_name}.tar")
+    lib.export_library(f"./{model_name}_{batch_size}.tar")
     return lib 
 
 
 def benchmark(model_name,imgsize,batch_size,target,dtype="float32",layout="NCHW"):
     input_name = "data"
-    input_shape = (1, 3, imgsize, imgsize)
+    input_shape = (batch_size, 3, imgsize, imgsize)
     data = np.random.uniform(size=input_shape)
 
-    model = load_model(model_name)
+    model = load_model(model_name,batch_size)
 
     data_array = np.random.uniform(0, 255, size=input_shape).astype("float32")
     # mxnet to tvm format
+
     if layout == "NHWC":
         mod = convert_to_nhwc(mod)
     else:
@@ -83,8 +84,8 @@ def benchmark(model_name,imgsize,batch_size,target,dtype="float32",layout="NCHW"
 
     mod, params = relay.frontend.from_mxnet(model, shape={"data": input_shape},dtype=dtype)
 
-    lib=compile_export(mod,params,target)
-    print("export done :",f"./{model_name}.tar")
+    lib=compile_export(mod,params,target,batch_size)
+    print("export done :",f"{model_name}_{batch_size}.tar")
 
     dev = tvm.cpu()
     module = runtime.GraphModule(lib["default"](dev))
