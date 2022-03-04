@@ -76,10 +76,6 @@ def benchmark(model_name,imgsize,batch_size,target,dtype="float32",layout="NCHW"
 
     data_array = np.random.uniform(0, 255, size=input_shape).astype("float32")
     # mxnet to tvm format
-    mod, params = relay.frontend.from_mxnet(
-            model, shape={"data": input_shape}, dtype=dtype
-        )
-
     if layout == "NHWC":
         mod = convert_to_nhwc(mod)
     else:
