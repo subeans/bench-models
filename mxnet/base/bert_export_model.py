@@ -56,11 +56,11 @@ def bert_download(model_name,seq_length, batch_size, dtype="float32"):
         # print(model.summary(inputs_nd, valid_length_nd))
   
 
-    target_path = f"./{model_name}"
+    target_path = f"./{model_name}_{batch_size}"
     from pathlib import Path
     Path(target_path).mkdir(parents=True, exist_ok=True)  
 
-    model.export(f'{model_name}/model')
+    model.export(f'{model_name}_{batch_size}/model')
     print("-"*10,f"Download {model_name} complete","-"*10)  
 
     
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model',default='bert_12_768_12' , type=str)
+    parser.add_argument('--model',default='bert_base' , type=str)
     parser.add_argument('--batchsize',default=1 , type=int)
     parser.add_argument('--seq',default=128 , type=int)
 
