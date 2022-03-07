@@ -67,9 +67,6 @@ def get_model(model_name,batchsize,seq_length,dtype="float32"):
     inputs_nd = mx.nd.array(inputs, ctx=ctx)
     valid_length_nd = mx.nd.array(valid_length, ctx=ctx)
 
-    
-    mx_out = model(inputs_nd, valid_length_nd,)
-
     net(inputs_nd,valid_length_nd, ctx=mx.cpu()).sigmoid()
 
     target_path = f"./{model_name}_{batchsize}"
