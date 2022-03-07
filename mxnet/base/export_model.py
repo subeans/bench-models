@@ -7,7 +7,7 @@ import numpy as np
 
 ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
-def download_model(model_name,imgsize=224):
+def download_model(model_name,batchsize,imgsize=224):
     models_detail = {
         'mobilenet':vision.mobilenet0_5(pretrained=True, ctx=ctx),
         'mobilenet_v2':vision.get_mobilenet_v2(1, pretrained=True),
@@ -21,19 +21,18 @@ def download_model(model_name,imgsize=224):
     model = models_detail[model_name]
     model.hybridize()
 
-    input_shape = (1, 3, imgsize, imgsize)
+    input_shape = (batchsize, 3, imgsize, imgsize)
     data = np.random.uniform(size=input_shape)
 
     data_array = np.random.uniform(0, 255, size=input_shape).astype("float32")
     mx_data = mx.nd.array(data_array)
     model(mx_data)
-    input_data = mx.nd.array(data, ctx=ctx)
     
-    target_path = f"./{model_name}"
+    target_path = f"./{model_name}_{batchsize}"
     from pathlib import Path
     Path(target_path).mkdir(parents=True, exist_ok=True)
 
-    model.export(f'{model_name}/model')
+    model.export(f'{model_name}_{batchsize}/model')
     print("-"*10,f"Download and export {model_name} complete","-"*10)
 
 if __name__ == "__main__":
@@ -41,11 +40,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model',default='resnet50' , type=str)
+    parser.add_argument('--batchsize',default=8 , type=int)
+
 
     args = parser.parse_args()
 
     model_name = args.model
+    batchsize = args.batchsize
     img_size = 224
+
     if args.model == "all":
         models = ["mobilenet", "mobilenet_v2", "inception_v3","resnet50","alexnet","vgg16","vgg19"]
     else:
@@ -54,4 +57,4 @@ if __name__ == "__main__":
     for model in models:
         if model == 'inception_v3':
             img_size = 299
-        download_model(model,img_size)
+        download_model(model,batchsize,img_size)
