@@ -72,11 +72,11 @@ def get_model(model_name,batchsize,seq_length,dtype="float32"):
 
     net(inputs_nd,valid_length_nd, ctx=mx.cpu()).sigmoid()
 
-    target_path = f"./{model_name}"
+    target_path = f"./{model_name}_{batchsize}"
     from pathlib import Path
     Path(target_path).mkdir(parents=True, exist_ok=True)  
 
-    net.export(f'{model_name}/model')
+    net.export(f'{model_name}_{batchsize}/model')
     print("-"*10,f"Download {model_name} complete","-"*10)  
 
 if __name__ == "__main__":
