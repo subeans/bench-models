@@ -16,11 +16,11 @@ from mxnet import gluon
 
 warnings.filterwarnings(action='ignore') 
 
-def load_model(model_name):
+def load_model(model_name,batch_size):
     ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
-    model_json = f"../base/{model_name}/model-symbol.json"
-    model_params = f"../base/{model_name}/model-0000.params"
+    model_json = f"../base/{model_name}_{batch_size}/model-symbol.json"
+    model_params = f"../base/{model_name}_{batch_size}/model-0000.params"
 
     if model_name == "bert_base":
         with warnings.catch_warnings():
@@ -35,7 +35,7 @@ def load_model(model_name):
 def compile_tvm(model_name,batch_size,seq_length,target):
 
     # load origianl mxnet model 
-    model = load_model(model_name)
+    model = load_model(model_name,batch_size)
 
     # Prepare input data
     dtype = "float32"
@@ -69,7 +69,7 @@ def compile_tvm(model_name,batch_size,seq_length,target):
     with tvm.transform.PassContext(opt_level=3):
         mod = relay.transform.InferType()(mod)
         lib = relay.build(mod, target=target, params=params)
-    lib.export_library(f"./{model_name}.tar")
+    lib.export_library(f"./{model_name}_{batch_size}.tar")
 
     dev = tvm.cpu()
     module = runtime.GraphModule(lib["default"](dev))
