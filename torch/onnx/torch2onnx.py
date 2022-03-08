@@ -6,7 +6,7 @@ import argparse
 
 
 def convert(model_name,batchsize,size):
-    PATH = f"./{model_name}_{batch_size}/"
+    PATH = f"../base/{model_name}_{batch_size}/"
     model = torch.load(PATH + 'model.pt')  # 전체 모델을 통째로 불러옴, 클래스 선언 필수
     model.load_state_dict(torch.load(PATH + 'model_state_dict.pt'))  # state_dict를 불러 온 후, 모델에 저장
 
