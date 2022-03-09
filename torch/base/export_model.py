@@ -6,6 +6,7 @@ from pathlib import Path
 
 def download_model(model_name,batchsize,imgsize=224):
     models_detail = {
+        'efficientnet_b0' = models.efficientnet_b0(pretrained=True),
         'mobilenet_v2':models.mobilenet_v2(pretrained=True),
         'inception_v3':models.inception_v3(pretrained=True),
         'resnet50': models.resnet50(pretrained=True),
@@ -15,7 +16,7 @@ def download_model(model_name,batchsize,imgsize=224):
     }
 
     model = models_detail[model_name]
-  
+    model.eval()
     # input_shape = (batchsize, 3, imgsize, imgsize)
     # data = np.random.uniform(size=input_shape)
 
