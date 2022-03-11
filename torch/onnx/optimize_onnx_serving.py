@@ -61,7 +61,11 @@ def optimize_onnx_serving(model_name,batch_size,size,repeat=100):
     optimize_onnx(model_name,batch_size)
     model_path = f"./{model_name}_{batch_size}.opt.onnx"
     # print(model_path)
-    session = ort.InferenceSession(model_path)
+    sess_options = ort.SessionOptions()
+    sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+
+    session = ort.InferenceSession(model_path, sess_options)
+
     session.get_modelmeta()
     inname = [input.name for input in session.get_inputs()]
     outname = [output.name for output in session.get_outputs()]
