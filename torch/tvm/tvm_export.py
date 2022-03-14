@@ -30,7 +30,7 @@ def timer(thunk, repeat=1, number=10, dryrun=3, min_repeat_ms=1000):
 
 def load_model(model_name,batchsize):
 
-    PATH = f"../base/{model_name}_{batchsize}/"
+    PATH = f"../base/{model_name}/"
     model = torch.load(PATH + 'model.pt')  # 전체 모델을 통째로 불러옴, 클래스 선언 필수
     model.load_state_dict(torch.load(PATH + 'model_state_dict.pt'))  # state_dict를 불러 온 후, 모델에 저장
     
