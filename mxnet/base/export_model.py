@@ -9,6 +9,8 @@ ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
 def download_model(model_name,batchsize,imgsize=224):
     models_detail = {
+        'resnet18' : vision.resnet18_v1(pretrained=True, ctx=ctx),
+        'squeezenet' : vision.squeezenet1_0(pretrained=True, ctx=ctx),
         'mobilenet':vision.mobilenet0_5(pretrained=True, ctx=ctx),
         'mobilenet_v2':vision.get_mobilenet_v2(1, pretrained=True),
         'inception_v3':vision.inception_v3(pretrained=True, ctx=ctx),
