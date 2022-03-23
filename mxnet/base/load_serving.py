@@ -40,8 +40,8 @@ def load_model(model_name):
         model = gluon.nn.SymbolBlock.imports(model_json, ['data'], model_params, ctx=ctx)
     return model 
 
-def benchmark(model_name,imgsize):
-    input_shape = (1, 3, imgsize, imgsize)
+def benchmark(model_name,imgsize,batchsize):
+    input_shape = (batchsize, 3, imgsize, imgsize)
     data = np.random.uniform(size=input_shape)
 
     input_data = mx.nd.array(data, ctx=ctx)
@@ -52,7 +52,7 @@ def benchmark(model_name,imgsize):
                 repeat=3,
                 dryrun=5,
                 min_repeat_ms=1000)
-    print(f"MXNet {model_name} latency for batch 1 : {np.mean(res):.2f} ms")
+    print(f"MXNet {model_name} latency for batch {batchsize} : {np.mean(res):.2f} ms")
 
 
 
@@ -61,10 +61,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--model',default='resnet50' , type=str)
-
+    parser.add_argument('--batchsize',default=8,type=int)
     args = parser.parse_args()
 
     model_name = args.model
+    batchsize = args.batchsize
+
     img_size = 224
     if args.model == "all":
         models = ["mobilenet", "mobilenet_v2", "inception_v3","resnet50","alexnet","vgg16","vgg19"]
@@ -74,4 +76,4 @@ if __name__ == "__main__":
     for model in models:
         if model == 'inception_v3':
             img_size = 299
-        benchmark(model,img_size)
+        benchmark(model,img_size,batchsize)
