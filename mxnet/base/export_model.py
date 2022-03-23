@@ -9,6 +9,7 @@ ctx = mx.gpu() if mx.context.num_gpus() else mx.cpu()
 
 def download_model(model_name,batchsize,imgsize=224):
     models_detail = {
+            'densenet' : vision.densenet161(pretrained=True, ctx=ctx),
         'resnet18' : vision.resnet18_v1(pretrained=True, ctx=ctx),
         'squeezenet' : vision.squeezenet1_0(pretrained=True, ctx=ctx),
         'mobilenet':vision.mobilenet0_5(pretrained=True, ctx=ctx),
@@ -30,11 +31,11 @@ def download_model(model_name,batchsize,imgsize=224):
     mx_data = mx.nd.array(data_array)
     model(mx_data)
     
-    target_path = f"./{model_name}_{batchsize}"
+    target_path = f"./{model_name}"
     from pathlib import Path
     Path(target_path).mkdir(parents=True, exist_ok=True)
 
-    model.export(f'{model_name}_{batchsize}/model')
+    model.export(f'{model_name}/model')
     print("-"*10,f"Download and export {model_name} complete","-"*10)
 
 if __name__ == "__main__":
